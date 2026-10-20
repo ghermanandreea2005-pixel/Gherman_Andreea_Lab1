@@ -3,37 +3,38 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Gherman_Andreea_Lab2.Models;
 
-namespace Gherman_Andreea_Lab2.Pages.BookPages;
-
-public class DetailsModel : PageModel
+namespace Gherman_Andreea_Lab2.Pages.BookPages
 {
-    private readonly Gherman_Andreea_Lab2Context _context;
-    public DetailsModel(Gherman_Andreea_Lab2Context context)
+    public class DetailsModel : PageModel
     {
-        _context = context;
-    }
+        private readonly Gherman_Andreea_Lab2Context _context;
 
-    public Book Book { get; set; } = default!;
-
-    public async Task<IActionResult> OnGetAsync(int? id)
-    {
-        if (id is null)
+        public DetailsModel(Gherman_Andreea_Lab2Context context)
         {
-            return NotFound();
+            _context = context;
         }
 
-        var book = await _context.Book
-            .Include(b => b.Author)
-            .FirstOrDefaultAsync(m => m.ID == id);
-        if (book is null)
-        {
-            return NotFound();
-        }
-        else
-        {
-            Book = book;
-        }
+        public Book Book { get; set; } = default!;
 
-        return Page();
+        public async Task<IActionResult> OnGetAsync(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            Book = await _context.Book
+                .Include(b => b.Publisher)
+                .Include(b => b.Author)
+                .Include(b => b.BookCategories)
+                    .ThenInclude(b => b.Category)
+                .FirstOrDefaultAsync(m => m.ID == id);
+
+            if (Book == null)
+            {
+                return NotFound();
+            }
+            return Page();
+        }
     }
 }
